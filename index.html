@@ -2,201 +2,310 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>LB Gebrauchtfahrzeuge</title>
 
   <style>
     :root{
-      --lb-red:#EC0016;
-      --bg:#f4f4f4;
-      --text:#1d1d1d;
-      --muted:#5a5a5a;
+      /* Railsystems-RP Look (teal / dunkel-teal) */
+      --teal-1:#3BA8BE;       /* helles Teal (Header-Leiste im Menü) */
+      --teal-2:#214B56;       /* dunkel-teal (Menü-Hintergrund / Topbar) */
+      --teal-3:#1B3F48;       /* noch dunkler (Trenner) */
+      --bg:#ffffff;
       --card:#ffffff;
-      --shadow:0 10px 30px rgba(0,0,0,.08);
-      --radius:12px;
+      --muted:#2d3b40;
+      --text:#0d0f10;
+      --shadow:0 10px 28px rgba(0,0,0,.08);
+      --radius:14px;
+      --border:1px solid rgba(0,0,0,.08);
     }
 
-    *{box-sizing:border-box;}
+    *{ box-sizing:border-box; }
+    html,body{ width:100%; }
     body{
       margin:0;
       font-family: Arial, Helvetica, sans-serif;
       background:var(--bg);
       color:var(--text);
+      overflow-x:hidden;
+      -webkit-text-size-adjust:100%;
     }
 
-    /* Header */
-    header{
-      background:var(--lb-red);
-      color:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:14px 28px;
+    /* TOPBAR */
+    .topbar{
       position:sticky;
       top:0;
       z-index:1000;
-      box-shadow:0 6px 18px rgba(0,0,0,.15);
+      background: var(--teal-2);
+      color:#fff;
+      height:56px;
+      display:flex;
+      align-items:center;
+      gap:14px;
+
+      padding-left: calc(14px + env(safe-area-inset-left));
+      padding-right: calc(14px + env(safe-area-inset-right));
+      padding-top: env(safe-area-inset-top);
+      box-shadow: 0 8px 18px rgba(0,0,0,.18);
     }
+
+    .hamburger{
+      width:44px;
+      height:44px;
+      border:0;
+      background:transparent;
+      color:#fff;
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+      border-radius:10px;
+    }
+    .hamburger:hover{ background: rgba(255,255,255,.08); }
+
     .brand{
       display:flex;
       align-items:center;
-      gap:12px;
-      min-width:220px;
-    }
-    .logo{
+      gap:10px;
       font-weight:800;
+      letter-spacing:.4px;
+      user-select:none;
+    }
+    .brand .logo{
+      font-weight:900;
       background:#fff;
-      color:var(--lb-red);
-      padding:6px 12px;
-      border-radius:6px;
-      font-size:18px;
-      letter-spacing:.5px;
+      color:var(--teal-2);
+      padding:6px 10px;
+      border-radius:8px;
+      font-size:14px;
+      letter-spacing:.6px;
     }
-    .brand-title{
-      font-weight:800;
-      font-size:18px;
-      line-height:1.1;
+    .brand small{
+      opacity:.92;
+      font-weight:700;
+      letter-spacing:.2px;
     }
-    nav{
+
+    /* DRAWER + OVERLAY */
+    .overlay{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.45);
+      opacity:0;
+      pointer-events:none;
+      transition: .18s opacity;
+      z-index:1100;
+    }
+    .overlay.open{ opacity:1; pointer-events:auto; }
+
+    .drawer{
+      position:fixed;
+      top:0;
+      left:0;
+      height:100vh;
+      width:min(420px, 86vw);
+      background: var(--teal-2);
+      color:#fff;
+      transform: translateX(-102%);
+      transition: .22s transform;
+      z-index:1200;
+
+      padding-top: env(safe-area-inset-top);
+      box-shadow: 16px 0 40px rgba(0,0,0,.35);
       display:flex;
-      gap:16px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
+      flex-direction:column;
     }
-    nav a{
+    .drawer.open{ transform: translateX(0); }
+
+    .drawerHeader{
+      background: var(--teal-1);
+      padding: 18px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      min-height:72px;
+    }
+    .drawerHeader .title{
+      font-weight:900;
+      letter-spacing:.4px;
+      font-size:18px;
+    }
+    .closeBtn{
+      width:42px;
+      height:42px;
+      border:0;
+      background: rgba(255,255,255,.18);
+      color:#fff;
+      cursor:pointer;
+      border-radius:10px;
+      font-size:18px;
+    }
+    .closeBtn:hover{ background: rgba(255,255,255,.26); }
+
+    .menu{
+      padding: 6px 0;
+      overflow:auto;
+    }
+    .menu a{
+      display:block;
+      padding: 18px 22px;
       color:#fff;
       text-decoration:none;
       font-weight:700;
-      opacity:.95;
+      letter-spacing:.4px;
+      text-transform: uppercase;
+      font-size: 15px;
+      border-top: 1px solid rgba(255,255,255,.08);
+      border-bottom: 1px solid rgba(0,0,0,.18);
     }
-    nav a:hover{opacity:1; text-decoration:underline;}
+    .menu a:hover{ background: rgba(255,255,255,.06); }
+    .menu a.active{
+      background: rgba(255,255,255,.08);
+      outline: 2px solid rgba(255,255,255,.10);
+      outline-offset: -2px;
+    }
+    .menu .ext{
+      text-transform:none;
+      letter-spacing:.2px;
+      font-weight:800;
+    }
 
-    /* Layout */
-    .container{
-      max-width:1100px;
-      margin:0 auto;
-      padding:28px 18px 60px;
+    /* MAIN LAYOUT */
+    main{
+      padding: 26px clamp(16px, 5vw, 90px);
+      padding-bottom: calc(50px + env(safe-area-inset-bottom));
     }
 
     .hero{
-      background:linear-gradient(135deg, #ffffff 0%, #fff5f6 100%);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:26px;
-      overflow:hidden;
-      border:1px solid rgba(236,0,22,.12);
+      margin-top: 14px;
+      padding: 22px;
+      border-left: 7px solid var(--teal-1);
+      background: #f4f7f8;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: var(--border);
     }
     .hero-grid{
       display:grid;
       grid-template-columns: 1.1fr .9fr;
-      gap:22px;
+      gap:18px;
       align-items:center;
     }
     .hero h1{
-      margin:0 0 10px;
-      color:var(--lb-red);
-      font-size:36px;
+      margin:0 0 8px;
+      font-size: clamp(26px, 4vw, 42px);
+      color: #17363f;
     }
     .hero p{
-      margin:0 0 16px;
+      margin:0 0 12px;
       color:var(--muted);
       line-height:1.5;
       font-size:16px;
     }
+
+    .badge{
+      display:inline-block;
+      background: rgba(59,168,190,.14);
+      color: #17363f;
+      border: 1px solid rgba(59,168,190,.25);
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:900;
+      font-size:12px;
+      margin-bottom:10px;
+    }
+
     .cta-row{
       display:flex;
-      gap:12px;
+      gap:10px;
       flex-wrap:wrap;
-      margin-top:10px;
+      margin-top:8px;
     }
+
     .btn{
       display:inline-block;
-      border:none;
-      cursor:pointer;
       text-decoration:none;
-      font-weight:800;
+      font-weight:900;
       padding:12px 16px;
-      border-radius:10px;
+      border-radius:12px;
       transition:.15s transform, .15s filter;
       user-select:none;
+      border:0;
+      cursor:pointer;
     }
-    .btn:hover{transform:translateY(-1px); filter:brightness(1.02);}
-    .btn-primary{background:var(--lb-red); color:#fff;}
-    .btn-ghost{background:#fff; color:var(--lb-red); border:2px solid var(--lb-red);}
+    .btn:hover{ transform: translateY(-1px); filter: brightness(1.03); }
+
+    .btn-primary{ background: var(--teal-2); color:#fff; }
+    .btn-ghost{
+      background:#fff;
+      color: var(--teal-2);
+      border: 2px solid var(--teal-2);
+    }
 
     .hero-img{
-      border-radius:14px;
+      border-radius: 14px;
       overflow:hidden;
-      border:1px solid rgba(0,0,0,.08);
+      border: var(--border);
       background:#fff;
-      box-shadow:0 10px 24px rgba(0,0,0,.10);
+      box-shadow: 0 10px 24px rgba(0,0,0,.10);
     }
     .hero-img img{
       width:100%;
       height:100%;
       display:block;
       object-fit:cover;
-      aspect-ratio:16/9; /* perfekt für 1080p */
+      aspect-ratio:16/9;
     }
-    .img-note{
-      font-size:12px;
-      color:var(--muted);
-      margin-top:8px;
+    .img-note{ font-size:12px; color:var(--muted); margin-top:8px; }
+
+    section.section{
+      margin-top: 22px;
+      padding: 22px;
+      border-radius: var(--radius);
+      background: var(--card);
+      border: var(--border);
+      box-shadow: var(--shadow);
+    }
+    section.section h2{
+      margin:0 0 12px;
+      color:#17363f;
+      letter-spacing:.3px;
     }
 
-    /* Sections */
-    .section{
-      margin-top:22px;
-    }
-    .section h2{
-      margin:0 0 12px;
-      color:var(--lb-red);
-      font-size:24px;
-    }
     .grid-2{
       display:grid;
-      grid-template-columns:1fr 1fr;
+      grid-template-columns: 1fr 1fr;
       gap:18px;
     }
-    .card{
-      background:var(--card);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:18px;
-      border:1px solid rgba(0,0,0,.06);
-    }
-    .card p{margin:10px 0; color:var(--muted); line-height:1.5;}
-    .badge{
-      display:inline-block;
-      background:rgba(236,0,22,.10);
-      color:var(--lb-red);
-      border:1px solid rgba(236,0,22,.18);
-      padding:6px 10px;
-      border-radius:999px;
-      font-weight:800;
-      font-size:12px;
-      margin-bottom:10px;
-    }
 
-    /* Price list */
-    .price-box{
+    /* cards inside */
+    .card{
       background: #fff;
-      border-left:6px solid var(--lb-red);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
+      border-radius: var(--radius);
+      border: var(--border);
+      box-shadow: var(--shadow);
       padding:18px;
-      border:1px solid rgba(0,0,0,.06);
     }
-    .price-box h3{margin:0 0 8px;}
+    .card p{ margin:10px 0; color:var(--muted); line-height:1.5; }
+
+    /* PRICE BOX (styled like railsystems content boxes) */
+    .price-box{
+      background:#f4f7f8;
+      border-left: 7px solid var(--teal-1);
+      border-radius: var(--radius);
+      border: var(--border);
+      box-shadow: var(--shadow);
+      padding:18px;
+    }
+    .price-box h3{ margin:0 0 8px; color:#17363f; }
     .price-list{
       margin:10px 0 0;
       padding-left:18px;
       color:var(--text);
     }
-    .price-list li{margin:8px 0; color:var(--muted);}
-    .price-list b{color:var(--text);}
+    .price-list li{ margin:8px 0; color:var(--muted); }
+    .price-list b{ color:var(--text); }
 
-    /* Offers */
+    /* OFFERS GRID */
     .offers{
       display:grid;
       grid-template-columns: 1fr 1fr;
@@ -204,10 +313,10 @@
     }
     .offer{
       background:#fff;
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
+      border-radius: var(--radius);
+      border: var(--border);
+      box-shadow: var(--shadow);
       overflow:hidden;
-      border:1px solid rgba(0,0,0,.06);
       display:flex;
       flex-direction:column;
     }
@@ -217,13 +326,12 @@
       object-fit:cover;
       aspect-ratio:16/9;
     }
-    .offer-body{
-      padding:16px;
-    }
+    .offer-body{ padding:16px; }
     .offer-title{
       font-size:18px;
       font-weight:900;
       margin:0 0 8px;
+      color:#17363f;
     }
     .offer-meta{
       margin:0;
@@ -238,199 +346,349 @@
       flex-wrap:wrap;
     }
 
-    /* Contact */
+    /* CONTACT */
     .contact{
-      background:linear-gradient(135deg, #ffffff 0%, #f7f7f7 100%);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
+      background:#f4f7f8;
+      border-left: 7px solid var(--teal-1);
+      border-radius: var(--radius);
+      border: var(--border);
+      box-shadow: var(--shadow);
       padding:18px;
-      border:1px solid rgba(0,0,0,.06);
     }
-    .contact strong{color:var(--text);}
-    .contact a{color:var(--lb-red); font-weight:900; text-decoration:none;}
-    .contact a:hover{text-decoration:underline;}
-    .small{font-size:12px; color:var(--muted); margin-top:10px;}
+    .contact strong{ color:var(--text); }
+    .contact a{
+      color: var(--teal-2);
+      font-weight: 900;
+      text-decoration:none;
+    }
+    .contact a:hover{ text-decoration:underline; }
+    .small{ font-size:12px; color:var(--muted); margin-top:10px; }
 
     footer{
       margin-top:26px;
       text-align:center;
-      color:#777;
+      color:#6b7a80;
       font-size:12px;
       padding:22px 10px;
     }
 
     /* Responsive */
+    @media (max-width: 980px){
+      .hero-grid{ grid-template-columns: 1fr; }
+    }
     @media (max-width: 900px){
-      .hero-grid{grid-template-columns:1fr;}
-      .grid-2{grid-template-columns:1fr;}
-      .offers{grid-template-columns:1fr;}
-      header{padding:12px 16px;}
-      .brand{min-width:auto;}
+      .grid-2{ grid-template-columns:1fr; }
+      .offers{ grid-template-columns:1fr; }
+      main{ padding: 18px 14px; }
     }
   </style>
 </head>
 
 <body>
-<header>
-  <div class="brand">
-    <div class="logo">LB</div>
-    <div class="brand-title">Gebrauchtfahrzeuge</div>
-  </div>
-  <nav>
-    <a href="https://loliflo22.github.io/LowlightsBahn/" target="_blank" rel="noopener">Startseite</a>
-    <a href="#angebot">Angebot</a>
-    <a href="#abholung">Abholung</a>
-    <a href="#preise">Preise</a>
-    <a href="https://loliflo22.github.io/LB-Navigator/" target="_blank" rel="noopener">LB Navigator</a>
-  </nav>
-</header>
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <button class="hamburger" id="openMenu" aria-label="Menü öffnen" title="Menü">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 6h16M4 12h16M4 18h16" stroke="white" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+    </button>
 
-<main class="container">
-
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-grid">
-      <div>
-        <span class="badge">Stand: aktuell (nur BR218 + Doppelstockwagen)</span>
-        <h1>LB Gebrauchtfahrzeuge</h1>
-        <p>
-          Hier kannst du gebrauchte Fahrzeuge der Lowlights Bahn <b>mieten</b> oder <b>kaufen</b>.
-          Abholung in <b>Soul Society</b> an der <b>LB Werkstatt</b>.
-        </p>
-        <p>
-          Bei Interesse, Problemen, Revisionen oder Fragen: <b>melde dich bei der LB</b>.
-        </p>
-
-        <div class="cta-row">
-          <a class="btn btn-primary" href="#angebot">Zum Angebot</a>
-          <a class="btn btn-ghost" href="#kontakt">Kontakt</a>
-        </div>
-
-        <div class="img-note">
-          
-        </div>
-      </div>
-
-      <div class="hero-img">
-        <!-- ✅ HIER DEIN 1080p BILD EINTRAGEN -->
-        <!-- Tipp: Lege es z.B. unter /images/br218-banner.jpg ab -->
-        <img src="BR218.png" alt="BR218 in Soul Society (Screenshot)">
-      </div>
+    <div class="brand">
+      <span class="logo">LB</span>
+      <span>Gebrauchtfahrzeuge</span>
+      <small>· Miete / Verkauf</small>
     </div>
-  </section>
+  </header>
 
-  <!-- ABHOLUNG / WERKSTATT + PREISE -->
-  <section class="section grid-2">
-    <div class="card" id="abholung">
-      <h2>Abholung & Werkstatt</h2>
-      <p>
-        <b>Abholpunkt:</b> Soul Society – <b>LB Werkstatt</b> (Südwerkstatt / Abstellgleise).
-      </p>
-      <p>
-        Fahrzeuge stehen dort abgestellt und werden nach Absprache übergeben.
-      </p>
+  <!-- OVERLAY -->
+  <div class="overlay" id="overlay"></div>
 
-      <div class="hero-img" style="margin-top:12px;">
-        <!-- ✅ OPTIONAL: MAP/SCREENSHOT VON DER WERKSTATT -->
-        <img src="Werkstadt.png" alt="LB Werkstatt Standort (Screenshot)">
-      </div>
-      <div class="img-note"></div>
+  <!-- DRAWER -->
+  <aside class="drawer" id="drawer" aria-label="Seitennavigation">
+    <div class="drawerHeader">
+      <div class="title">LB Gebrauchtfahrzeuge</div>
+      <button class="closeBtn" id="closeMenu" aria-label="Menü schließen">✕</button>
     </div>
 
-    <div class="price-box" id="preise">
-      <h2>Preise</h2>
+    <nav class="menu" id="menu">
+      <a href="#top" class="active">Startseite</a>
+      <a href="#angebot">Angebot</a>
+      <a href="#abholung">Abholung</a>
+      <a href="#preise">Preise</a>
+      <a class="ext" href="https://loliflo22.github.io/LowlightsBahn/" target="_blank" rel="noopener">↗ Zur LB Startseite</a>
+      <a class="ext" href="https://loliflo22.github.io/LB-Navigator/" target="_blank" rel="noopener">↗ LB Navigator</a>
+    </nav>
+  </aside>
 
-      <h3>Vermietung</h3>
-      <ul class="price-list">
-        <li><b>BR218:</b> 100$ Economy / Minecraft-Jahr</li>
-      </ul>
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-grid">
+        <div>
+          <span class="badge">Stand: aktuell (nur BR218 + Doppelstockwagen)</span>
+          <h1>LB Gebrauchtfahrzeuge</h1>
+          <p>
+            Hier kannst du gebrauchte Fahrzeuge der Lowlights Bahn <b>mieten</b> oder <b>kaufen</b>.
+            Abholung in <b>Soul Society</b> an der <b>LB Werkstatt</b>.
+          </p>
+          <p>
+            Bei Interesse, Problemen, Revisionen oder Fragen: <b>melde dich bei der LB</b>.
+          </p>
 
-      <h3 style="margin-top:14px;">Verkauf</h3>
-      <ul class="price-list">
-        <li><b>BR218:</b> 20.000$ Economy</li>
-      </ul>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="#angebot">Zum Angebot</a>
+            <a class="btn btn-ghost" href="#kontakt">Kontakt</a>
+          </div>
 
-      <h3 style="margin-top:14px;">Doppelstockwagen</h3>
-      <ul class="price-list">
-        <li><b>Bestand:</b> 10 Stück verfügbar</li>
-        <li><b>Preis:</b>5.000$</li>
-      </ul>
-
-      <p class="small">
-        Hinweis: Bei technischen Problemen oder anstehenden Revisionen bitte direkt melden, dann klären wir das schnell.
-      </p>
-    </div>
-  </section>
-
-  <!-- ANGEBOT -->
-  <section class="section" id="angebot">
-    <h2>Aktuelles Angebot</h2>
-
-    <div class="offers">
-
-      <!-- BR218 -->
-      <article class="offer">
-        <div class="offer-img">
-          <!-- ✅ HIER DEIN BR218 AUSWAHL-BILD -->
-          <img src="BR218.png" alt="BR218 (Screenshot)">
+          <div class="img-note"></div>
         </div>
-        <div class="offer-body">
-          <div class="offer-title">Lokomotive: BR218</div>
-          <p class="offer-meta">
-            Verfügbar für <b>Vermietung</b> und <b>Verkauf</b>.<br>
-            Abholung: <b>Soul Society – LB Werkstatt</b>.<br>
-            Miete: <b>100$ / Minecraft-Jahr</b> · Kauf: <b>20.000$</b>
+
+        <div class="hero-img">
+          <!-- ✅ HIER DEIN 1080p BILD EINTRAGEN -->
+          <img src="BR218.png" alt="BR218 in Soul Society (Screenshot)">
+        </div>
+      </div>
+    </section>
+
+    <!-- ABHOLUNG / WERKSTATT + PREISE -->
+    <section class="section">
+      <div class="grid-2">
+        <div class="card" id="abholung">
+          <h2>Abholung & Werkstatt</h2>
+          <p>
+            <b>Abholpunkt:</b> Soul Society – <b>LB Werkstatt</b> (Südwerkstatt / Abstellgleise).
+          </p>
+          <p>
+            Fahrzeuge stehen dort abgestellt und werden nach Absprache übergeben.
+          </p>
+
+          <div class="hero-img" style="margin-top:12px;">
+            <!-- ✅ OPTIONAL: MAP/SCREENSHOT VON DER WERKSTATT -->
+            <img src="Werkstadt.png" alt="LB Werkstatt Standort (Screenshot)">
+          </div>
+          <div class="img-note"></div>
+        </div>
+
+        <div class="price-box" id="preise">
+          <h2>Preise</h2>
+
+          <h3>Vermietung</h3>
+          <ul class="price-list">
+            <li><b>BR218:</b> 100$ Economy / Minecraft-Jahr</li>
+          </ul>
+
+          <h3 style="margin-top:14px;">Verkauf</h3>
+          <ul class="price-list">
+            <li><b>BR218:</b> 20.000$ Economy</li>
+          </ul>
+
+          <h3 style="margin-top:14px;">Doppelstockwagen</h3>
+          <ul class="price-list">
+            <li><b>Bestand:</b> 10 Stück verfügbar</li>
+            <li><b>Preis:</b>5.000$</li>
+          </ul>
+
+          <p class="small">
+            Hinweis: Bei technischen Problemen oder anstehenden Revisionen bitte direkt melden, dann klären wir das schnell.
           </p>
         </div>
-        <div class="offer-actions">
-          <a class="btn btn-primary" href="#kontakt">Interesse / Reservieren</a>
-          <a class="btn btn-ghost" href="#abholung">Abholpunkt ansehen</a>
-        </div>
-      </article>
+      </div>
+    </section>
 
-      <!-- Doppelstockwagen -->
-      <article class="offer">
-        <div class="offer-img">
-          <!-- ✅ HIER DEIN DOSTO BILD -->
-          <img src="Dostos.png" alt="Doppelstockwagen (Screenshot)">
-        </div>
-        <div class="offer-body">
-          <div class="offer-title">Wagen: Doppelstockwagen</div>
-          <p class="offer-meta">
-            Verfügbar: <b>10 Stück</b><br>
-            Abholung: <b>Soul Society – LB Werkstatt</b>.<br>
-            Miete: <b>20$ / Minecraft-Jahr</b> · Kauf: <b>5.000$</b>
-          </p>
-        </div>
-        <div class="offer-actions">
-          <a class="btn btn-primary" href="#kontakt">Interesse melden</a>
-          <a class="btn btn-ghost" href="#preise">Preise</a>
-        </div>
-      </article>
+    <!-- ANGEBOT -->
+    <section class="section" id="angebot">
+      <h2>Aktuelles Angebot</h2>
 
-    </div>
-  </section>
+      <div class="offers">
 
-  <!-- KONTAKT -->
-  <section class="section" id="kontakt">
-    <div class="contact">
-      <h2>Kontakt & Support</h2>
-      <p>
-        Bei Interesse oder Problemen/Revisionen: <br>
-        <strong>Discord:</strong> <a href="#" onclick="return false;">@lowlightflow</a>
-        &nbsp;oder&nbsp;
-        <strong>Ingame:</strong> <span style="font-weight:900;">MC1_16</span>
-      </p>
-      <p class="small">
-        
-      </p>
-    </div>
-  </section>
+        <!-- BR218 -->
+        <article class="offer" id="br218">
+          <div class="offer-img">
+            <img src="BR218.png" alt="BR218 (Screenshot)">
+          </div>
+          <div class="offer-body">
+            <div class="offer-title">Lokomotive: BR218</div>
+            <p class="offer-meta">
+              Verfügbar für <b>Vermietung</b> und <b>Verkauf</b>.<br>
+              Abholung: <b>Soul Society – LB Werkstatt</b>.<br>
+              Miete: <b>100$ / Minecraft-Jahr</b> · Kauf: <b>20.000$</b>
+            </p>
+          </div>
+          <div class="offer-actions">
+            <a class="btn btn-primary" href="#kontakt">Interesse / Reservieren</a>
+            <a class="btn btn-ghost" href="#abholung">Abholpunkt ansehen</a>
+          </div>
+        </article>
 
-  <footer>
-    © 1980–2014 Lowlights Bahn · Konzernsitz: Soul Society
-  </footer>
+        <!-- Doppelstockwagen -->
+        <article class="offer" id="dosto">
+          <div class="offer-img">
+            <img src="Dostos.png" alt="Doppelstockwagen (Screenshot)">
+          </div>
+          <div class="offer-body">
+            <div class="offer-title">Wagen: Doppelstockwagen</div>
+            <p class="offer-meta">
+              Verfügbar: <b>10 Stück</b><br>
+              Abholung: <b>Soul Society – LB Werkstatt</b>.<br>
+              Miete: <b>20$ / Minecraft-Jahr</b> · Kauf: <b>5.000$</b>
+            </p>
+          </div>
+          <div class="offer-actions">
+            <a class="btn btn-primary" href="#kontakt">Interesse melden</a>
+            <a class="btn btn-ghost" href="#preise">Preise</a>
+          </div>
+        </article>
 
-</main>
+        <!-- BR246 -->
+        <article class="offer" id="br246">
+          <div class="offer-img">
+            <!-- ✅ Platzhalter-Bild: ersetzen -->
+            <img src="BR246.png" alt="BR246 (Screenshot)">
+          </div>
+          <div class="offer-body">
+            <div class="offer-title">Lokomotive: BR246</div>
+            <p class="offer-meta">
+              Verfügbar für <b>Vermietung</b> und <b>Verkauf</b>.<br>
+              Abholung: <b>Soul Society – LB Werkstatt</b>.
+            </p>
+          </div>
+          <div class="offer-actions">
+            <a class="btn btn-primary" href="#kontakt">Interesse melden</a>
+            <a class="btn btn-ghost" href="#abholung">Abholpunkt</a>
+          </div>
+        </article>
+
+        <!-- BR112 -->
+        <article class="offer" id="br112">
+          <div class="offer-img">
+            <!-- ✅ Platzhalter-Bild: ersetzen -->
+            <img src="BR112.png" alt="BR112 (Screenshot)">
+          </div>
+          <div class="offer-body">
+            <div class="offer-title">Lokomotive: BR112</div>
+            <p class="offer-meta">
+              Verfügbar für <b>Vermietung</b> und <b>Verkauf</b>.<br>
+              Abholung: <b>Soul Society – LB Werkstatt</b>.
+            </p>
+          </div>
+          <div class="offer-actions">
+            <a class="btn btn-primary" href="#kontakt">Interesse melden</a>
+            <a class="btn btn-ghost" href="#abholung">Abholpunkt</a>
+          </div>
+        </article>
+
+        <!-- Metrowagen -->
+        <article class="offer" id="metrowagen">
+          <div class="offer-img">
+            <!-- ✅ Platzhalter-Bild: ersetzen -->
+            <img src="Metrowagen.png" alt="Metrowagen (Screenshot)">
+          </div>
+          <div class="offer-body">
+            <div class="offer-title">Wagen: Metrowagen</div>
+            <p class="offer-meta">
+              Verfügbar für <b>Vermietung</b> und <b>Verkauf</b>.<br>
+              Abholung: <b>Soul Society – LB Werkstatt</b>.
+            </p>
+          </div>
+          <div class="offer-actions">
+            <a class="btn btn-primary" href="#kontakt">Interesse melden</a>
+            <a class="btn btn-ghost" href="#preise">Preise</a>
+          </div>
+        </article>
+
+        <!-- IC-Wagen -->
+        <article class="offer" id="icwagen">
+          <div class="offer-img">
+            <!-- ✅ Platzhalter-Bild: ersetzen -->
+            <img src="IC-Wagen.png" alt="IC-Wagen (Screenshot)">
+          </div>
+          <div class="offer-body">
+            <div class="offer-title">Wagen: IC-Wagen</div>
+            <p class="offer-meta">
+              Verfügbar für <b>Vermietung</b> und <b>Verkauf</b>.<br>
+              Abholung: <b>Soul Society – LB Werkstatt</b>.
+            </p>
+          </div>
+          <div class="offer-actions">
+            <a class="btn btn-primary" href="#kontakt">Interesse melden</a>
+            <a class="btn btn-ghost" href="#preise">Preise</a>
+          </div>
+        </article>
+
+        <!-- Doppelstock Steuerwagen -->
+        <article class="offer" id="dosto-steuerwagen">
+          <div class="offer-img">
+            <!-- ✅ Platzhalter-Bild: ersetzen -->
+            <img src="Dosto-Steuerwagen.png" alt="Doppelstock Steuerwagen (Screenshot)">
+          </div>
+          <div class="offer-body">
+            <div class="offer-title">Wagen: Doppelstock Steuerwagen</div>
+            <p class="offer-meta">
+              Verfügbar für <b>Vermietung</b> und <b>Verkauf</b>.<br>
+              Abholung: <b>Soul Society – LB Werkstatt</b>.
+            </p>
+          </div>
+          <div class="offer-actions">
+            <a class="btn btn-primary" href="#kontakt">Interesse melden</a>
+            <a class="btn btn-ghost" href="#preise">Preise</a>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- KONTAKT -->
+    <section class="section" id="kontakt">
+      <div class="contact">
+        <h2>Kontakt & Support</h2>
+        <p>
+          Bei Interesse oder Problemen/Revisionen: <br>
+          <strong>Discord:</strong> <a href="#" onclick="return false;">@lowlightflow</a>
+          &nbsp;oder&nbsp;
+          <strong>Ingame:</strong> <span style="font-weight:900;">MC1_16</span>
+        </p>
+        <p class="small"></p>
+      </div>
+    </section>
+
+    <footer>
+      © 1980–2014 Lowlights Bahn · Konzernsitz: Soul Society
+    </footer>
+  </main>
+
+  <script>
+    const drawer = document.getElementById("drawer");
+    const overlay = document.getElementById("overlay");
+    const openMenu = document.getElementById("openMenu");
+    const closeMenu = document.getElementById("closeMenu");
+    const menu = document.getElementById("menu");
+
+    function openDrawer(){
+      drawer.classList.add("open");
+      overlay.classList.add("open");
+    }
+    function closeDrawer(){
+      drawer.classList.remove("open");
+      overlay.classList.remove("open");
+    }
+
+    openMenu.addEventListener("click", openDrawer);
+    closeMenu.addEventListener("click", closeDrawer);
+    overlay.addEventListener("click", closeDrawer);
+
+    // Menü-Klick: schließen + active state
+    menu.querySelectorAll("a[href^='#']").forEach(a=>{
+      a.addEventListener("click", ()=>{
+        menu.querySelectorAll("a").forEach(x=>x.classList.remove("active"));
+        a.classList.add("active");
+        closeDrawer();
+      });
+    });
+
+    // ESC schließt
+    document.addEventListener("keydown", (e)=>{
+      if(e.key === "Escape") closeDrawer();
+    });
+  </script>
 </body>
 </html>
